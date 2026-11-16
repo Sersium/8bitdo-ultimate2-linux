@@ -162,6 +162,24 @@ def test_get_and_set_theme(dev, fake):
     assert fake.theme == 3 and dev.get_theme() == 3
 
 
+@pytest.mark.parametrize("edition,pad,wire_theme", [
+    (2, None, 6),
+    (0, {"battery": 75, "firmware": 110, "edition": 2}, 6),
+    (3, None, 5),
+])
+def test_off_theme_for_controller_edition(dev, fake, edition, pad, wire_theme):
+    fake.edition, fake.pad = edition, pad
+    dev.set_theme(5)
+    assert fake.theme == wire_theme
+    assert dev.get_theme() == 5
+
+
+def test_set_theme_readback_mismatch(dev, monkeypatch):
+    monkeypatch.setattr(dev, "get_theme", lambda: 2)
+    with pytest.raises(IOError, match="did not retain"):
+        dev.set_theme(3)
+
+
 def test_get_theme_no_answer(dev, monkeypatch):
     monkeypatch.setattr(dev, "recv", lambda cmd, timeout=0.5: None)
     assert dev.get_theme() is None

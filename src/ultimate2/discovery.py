@@ -22,6 +22,7 @@ def _read(path):
 
 def find_devices():
     """Yield ``(hidraw_path, pid, usb_dir)`` for every 8BitDo vendor config interface."""
+    devices = []
     for d in sorted(glob.glob(SYS + "/class/hidraw/hidraw*")):
         ue = _read(d + "/device/uevent").decode(errors="replace")
         hid_id = next((l.split("=")[1] for l in ue.splitlines() if l.startswith("HID_ID=")), "")
@@ -40,7 +41,9 @@ def find_devices():
         elif pid != protocol.PID_BT_CONFIG and desc[:3] not in CONFIG_DESCRIPTORS:
             continue
         usb_dir = os.path.dirname(os.path.dirname(os.path.realpath(d + "/device")))
-        yield DEV + "/" + os.path.basename(d), pid, usb_dir
+        devices.append((DEV + "/" + os.path.basename(d), pid, usb_dir))
+    # The receiver can be idle while its controller is connected directly over USB.
+    yield from sorted(devices, key=lambda dev: dev[1] != 0x310B)
 
 
 def find_input_node(usb_dir):

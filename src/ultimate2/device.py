@@ -276,12 +276,21 @@ class Device:
         """Active LED theme (see :data:`ultimate2.protocol.THEMES`), or ``None``."""
         self.send(CMD_GET_THEME)
         r = self.recv(CMD_GET_THEME)
-        return r[1][0] if r and r[0] else None
+        theme = r[1][0] if r and r[0] else None
+        return 5 if theme == 6 else theme
 
     def set_theme(self, theme):
-        self.send(CMD_SET_THEME, sub=theme)
+        wire_theme = theme
+        if theme == 5:
+            pad = self.pad_status()
+            # Ultimate Software V2 uses Off=6 for controller edition 2, Off=5 for the others.
+            if (pad["edition"] if pad else self.edition()) == 2:
+                wire_theme = 6
+        self.send(CMD_SET_THEME, sub=wire_theme)
         if self.recv(CMD_SET_THEME) is None:
             raise IOError("controller did not confirm the LED theme")
+        if self.get_theme() != theme:
+            raise IOError("controller did not retain the LED theme")
 
     def current_slot(self):
         """Active profile (0-2; 3 = default, no custom profile). Reads only the 20-byte header,

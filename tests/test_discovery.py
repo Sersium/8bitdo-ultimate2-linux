@@ -68,6 +68,15 @@ def test_find_input_node_js(sysroot):
     assert d.find_input_node(usb) == "/devx/input/js1"
 
 
+def test_wired_controller_precedes_idle_receiver(sysroot):
+    receiver = make_hid(sysroot, 0, hid_ev(VID, 0x6013), b"\x06\xa0\xff")
+    wired = make_hid(sysroot, 1, hid_ev(VID, 0x310B), b"\x06\x7a\xff")
+    assert list(d.find_devices()) == [
+        ("/devx/hidraw1", 0x310B, wired),
+        ("/devx/hidraw0", 0x6013, receiver),
+    ]
+
+
 def test_find_input_node_event_fallback(sysroot):
     usb = make_hid(sysroot, 0, hid_ev(VID, 0x6012), b"\x06\x7a\xff")
     n = sysroot / "class" / "input" / "event3"

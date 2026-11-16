@@ -346,6 +346,16 @@ def test_theme_chip_applies_immediately(app, fake):
     assert app._save_job is None                            # a theme change is not a profile edit
 
 
+def test_off_theme_for_edition_two(app, fake):
+    fake.edition = 2
+    app.v["theme"].set(5)
+    pump(app)
+    assert fake.theme == 6 and app.theme_dev == 5
+    app.read_device()
+    pump(app)
+    assert app.v["theme"].get() == 5
+
+
 def test_theme_same_or_invalid_is_noop(app, fake):
     log = len(fake.log)
     app.v["theme"].set(app.theme_dev)        # unchanged
