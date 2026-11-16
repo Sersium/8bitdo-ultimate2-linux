@@ -18,6 +18,10 @@ GUI tests need an X display. On a headless machine, run them through `xvfb-run`.
 
 ## Rules
 
+The Rust Wayland app lives in `native/`. Run `cargo fmt --check`, `cargo clippy --all-targets --all-features -- -D warnings`
+and `cargo test` there. Keep protocol validation and data-preservation tests; hardware probes must not flash firmware.
+The Python rules below apply to the retained upstream implementation.
+
 * Keep the standard-library-only runtime (Tk is part of Python).
 * Every change keeps the test suite green at **100% line and branch coverage**. Use `tests/fake_device.py` instead of
   hardware, and extend it when you add a protocol command.
