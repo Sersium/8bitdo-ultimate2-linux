@@ -381,6 +381,8 @@ impl App {
         ui.horizontal_wrapped(|ui| {
             ui.heading(view.mode);
             ui.label(view.connection);
+        });
+        ui.horizontal_wrapped(|ui| {
             ui.menu_button("Change input mode", |ui| self.mode_controls(ui));
             if let Some(b) = self.session.as_ref().and_then(|s| s.info.battery) {
                 ui.small(format!("Battery {b}%"));
@@ -491,7 +493,7 @@ impl App {
                 )
             });
             let open = header.is_open();
-            let (toggle, title_response, body) = header.body(|ui| self.section_content(ui, i));
+            let (_, title_response, body) = header.body(|ui| self.section_content(ui, i));
             if title_response.inner.clicked() {
                 let mut state = egui::collapsing_header::CollapsingState::load_with_default_open(
                     ui.ctx(),
@@ -507,10 +509,6 @@ impl App {
                 self.scroll_section = None;
             }
             if i == 4 {
-                if (toggle.clicked() || title_response.inner.clicked()) && (body.is_some() || !open)
-                {
-                    self.follow_motion = true;
-                }
                 self.motion_render
                     .store(self.follow_motion || body.is_some(), Ordering::Relaxed);
             }
